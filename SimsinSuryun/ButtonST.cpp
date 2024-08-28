@@ -496,7 +496,6 @@ void CButtonST::DrawItem(LPDRAWITEMSTRUCT lpDIS)
       {
 //		  pDC->Draw3dRect(itemRect, ::GetSysColor(COLOR_BTNHILIGHT), ::GetSysColor(COLOR_BTNSHADOW));
 //*/
-		// Round 버튼 그려줌 [2005-03-11-HJH(MOD)] ----------------------------------------------------------------------   
 		pDC->SetArcDirection(AD_CLOCKWISE);						// 원을 그릴 방향 설정  - 시계 방향 
 		pOldPen = pDC->SelectObject(&penBtnHiLight);
 
@@ -637,18 +636,16 @@ void CButtonST::DrawItem(LPDRAWITEMSTRUCT lpDIS)
     captionRect.OffsetRect((centerRect.Width() - captionRect.Width())-4, (centerRect.Height() - captionRect.Height())/2);
 */
 
-// 2000.12.05 Jall 추가 루틴.
 	captionRect.top += 2;
 
 	CString csR = _T("\r");
 	strTemp = sTitle.Left( sTitle.Find(csR));
-	if ( captionRect.Width() > 100 )                           // 2000.12.21 Jall 테이블 주문 화면 처리 땜시.
+	if ( captionRect.Width() > 100 )                          
 		captionRect.top += 2;
 	else
-		if ( strTemp.GetLength() < 15 ) captionRect.top += 3;  // 2001.01.15 Jall : Font Size 가 작아져서 13->15로 수정
+		if ( strTemp.GetLength() < 15 ) captionRect.top += 3;
 
 // 여기까지.
-	// [2005-07-28-HJH(MOD)] : 버튼 Text위치 조정 플래그 변경 
     pDC->DrawText(sTitle, -1, captionRect, m_nTextAlign|DT_WORDBREAK);		
 //  pDC->DrawText(sTitle, -1, captionRect, DT_CENTER|DT_WORDBREAK);
 
@@ -1010,7 +1007,6 @@ void CButtonST::OnSysColorChange()
 	m_bmpBk.DeleteObject();	
 } // End of OnSysColorChange
 
-//2004-0224-SHJ(ADD): [CBUTTONST]
 DWORD CButtonST::SetBk(CDC* pDC)
 {
 	if (m_bDrawTransparent && pDC)

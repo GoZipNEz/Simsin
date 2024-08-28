@@ -44,8 +44,16 @@ BOOL Warning::OnInitDialog()
 
 	SetBackgroundImage(IDB_WARNING);
 
+	// 현재 시간
+	CTime curTime = CTime::GetCurrentTime();
+	// 끝 시간 
+	CTimeSpan remainTime  = m_endTime - curTime;
+
 	CString csMsg = _T("");
-	csMsg = "정말로 나갈꺼야?";
+	int		iTime = 0;
+	// 남은시간 계산 ( ~~분으로 표시 )
+	iTime = _ttoi(remainTime.Format("%M")) + (_ttoi(remainTime.Format("%H")) * 60);
+	csMsg.Format(L"정말로 나갈꺼야? 남은시간 : %d분",  iTime);
 
 	SetDlgItemText(IDC_MSG, csMsg);
 

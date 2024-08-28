@@ -22,7 +22,10 @@ protected:
 	virtual BOOL OnInitDialog();
 	DECLARE_MESSAGE_MAP()
 
+	// 버튼
 	CButtonST	m_btnYes, m_btnNo, m_btnClose;
+	// 남은시간
+	CTime	m_endTime;
 
 	void	TransparentButton();
 
@@ -30,4 +33,6 @@ public:
 	afx_msg void OnBnClickedYes();
 	afx_msg void OnBnClickedNo();
 	afx_msg void OnBnClickedBtnClose();
+
+	inline	void GetEndTime(CTime pEndTime){m_endTime = pEndTime;}
 };

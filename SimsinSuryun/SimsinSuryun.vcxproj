@@ -103,6 +103,7 @@
   <ItemGroup>
     <ClInclude Include="ButtonST.h" />
     <ClInclude Include="Include.h" />
+    <ClInclude Include="ParmDef.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SimsinSuryun.h" />
     <ClInclude Include="SimsinSuryunDlg.h" />

@@ -2,6 +2,7 @@
 // SimsinSuryunDlg.h : 헤더 파일
 //
 #include "Include.h"
+#include "ParmDef.h"
 #pragma once
 
 
@@ -20,6 +21,10 @@ public:
 
 
 // 구현입니다.
+
+private:
+//	static CEvent g_CEventTerminated;			// When MainThread terminate, be set.
+
 protected:
 	HICON m_hIcon;
 
@@ -28,16 +33,39 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
-	DECLARE_MESSAGE_MAP()
-
-	long m_lstartTime, m_lEndTime, m_lTicketTime;
-
-	CButtonST m_btnSogong;
-
-
-	void	TransparentButton();
-
-public:
+	afx_msg void OnDestroy();
 	afx_msg void OnBnClickedSogong();
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
+	DECLARE_MESSAGE_MAP()
+
+	// 남은시간 관련
+	CTime	m_endTime;
+	long	m_lTicketTime;
+
+	// 버튼
+	CButtonST m_btnSogong;
+
+	// 쓰레드
+	CWinThread * m_pThread;
+
+	// 버튼 투명화 
+	void	TransparentButton();
+
+	// 레벨, 경험치
+	int		m_iLevel;
+	double	m_dMaxExp, m_dAddExp;
+
+	bool	m_bDestroy;
+
+	// 쓰레드
+	static CSimsinSuryunDlg* m_pDlg;
+
+//	static UINT ThreadStartFuntion_WinThread( LPVOID param );		
+	short	CreateExpThread();
+	static	UINT	ExpProcThread(LPVOID param);
+	long	StaticExpText();
+	
+
+public:
+	static HWND		m_hWndDialog;
 };
