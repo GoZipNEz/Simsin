@@ -5,6 +5,10 @@
 #include "ParmDef.h"
 #pragma once
 
+// 캐릭터 상태값
+#define CHARACTER_STATUS_GROUND	1 // 땅위 
+#define CHARACTER_STATUS_AIR	2 // 공중
+#define CHARACTER_STATUS_LADDER	3 // 사다리
 
 // CSimsinSuryunDlg 대화 상자
 class CSimsinSuryunDlg : public CDialogEx
@@ -51,13 +55,27 @@ protected:
 	// 버튼 투명화 
 	void	TransparentButton();
 
+	// 값 초기화
+	void	InitVars();
+
 	// 레벨, 경험치
 	int		m_iLevel;
 	double	m_dMaxExp, m_dAddExp;
 
-	bool	m_bDestroy;
+	// 캐릭터
+	int		m_iSizeX, m_iSizeY; // 캐릭터 크기 
+	int		m_iPosX, m_iPosY;	// 캐릭터 위치
+	int		m_iMoveX, m_iMoveY; // 속도
+	short	m_sStatus;			// 캐릭터 상태
+	BOOL	m_bDown;			// 엎드린 상태 여부
+	short	m_sDirect;			// 보는 방향 (1 : 오른쪽, -1 : 왼쪽)
+
+	void	CheckStatus();
+	BOOL	IsLadder();
+	int		GetGround();
 
 	// 쓰레드
+	bool	m_bDestroy;
 	static CSimsinSuryunDlg* m_pDlg;
 
 //	static UINT ThreadStartFuntion_WinThread( LPVOID param );		
@@ -68,4 +86,6 @@ protected:
 
 public:
 	static HWND		m_hWndDialog;
+	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 };
