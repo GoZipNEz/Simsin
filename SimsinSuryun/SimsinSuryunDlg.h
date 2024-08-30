@@ -60,7 +60,9 @@ protected:
 
 	// 레벨, 경험치
 	int		m_iLevel;
-	double	m_dMaxExp, m_dAddExp;
+	double	m_dMaxExp, m_dNowExp, m_dAddExp;
+
+	//void	IncreaseExp();
 
 	// 캐릭터
 	int		m_iSizeX, m_iSizeY; // 캐릭터 크기 
@@ -82,10 +84,14 @@ protected:
 	short	CreateExpThread();
 	static	UINT	ExpProcThread(LPVOID param);
 	long	StaticExpText();
+	void	ClearStaticExpText();
 	
-
-public:
 	static HWND		m_hWndDialog;
-	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
+
+	//키입력
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
+
+	// Sleep 이벤트
+	void TimerSleep(unsigned int pinMiliSecond);
+
 };

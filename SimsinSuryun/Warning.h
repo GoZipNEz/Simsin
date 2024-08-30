@@ -24,9 +24,9 @@ protected:
 
 	// 버튼
 	CButtonST	m_btnYes, m_btnNo, m_btnClose;
+
 	// 남은시간
 	CTime	m_endTime;
-
 	void	TransparentButton();
 
 public:

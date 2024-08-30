@@ -14,7 +14,6 @@
 
 
 // CSimsinSuryunDlg 대화 상자
-// CEvent CSimsinSuryunDlg::g_CEventTerminated			(TRUE,  TRUE );	// 메인스레드 종료 알림 동기화 이벤트입니다.
 CSimsinSuryunDlg* CSimsinSuryunDlg::m_pDlg = NULL;
 
 CSimsinSuryunDlg::CSimsinSuryunDlg(CWnd* pParent /*=NULL*/)
@@ -27,6 +26,7 @@ CSimsinSuryunDlg::CSimsinSuryunDlg(CWnd* pParent /*=NULL*/)
 
 	//임의값
 	m_dMaxExp = 1589756321;
+	m_dNowExp = 1561582698; // 레벨업하면 2608 남음.
 	m_dAddExp = 5635245;
 }
 
@@ -37,8 +37,7 @@ void CSimsinSuryunDlg::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CSimsinSuryunDlg, CDialogEx)
 	ON_WM_PAINT()
-	//ON_WM_QUERYDRAGICON()
-	//ON_WM_CTLCOLOR()
+	//ON_WM_CTLCOLOR() // 안돼서 주석처리
 	ON_WM_TIMER()
 	ON_BN_CLICKED(IDC_SOGONG, &CSimsinSuryunDlg::OnBnClickedSogong)
 	ON_WM_DESTROY()
@@ -46,7 +45,6 @@ END_MESSAGE_MAP()
 
 
 // CSimsinSuryunDlg 메시지 처리기
-
 BOOL CSimsinSuryunDlg::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
@@ -70,7 +68,8 @@ BOOL CSimsinSuryunDlg::OnInitDialog()
 	SetTimer(1, m_lTicketTime * 60 * 1000, NULL);
 
 	// 경험치 증가 쓰레드
-	SetTimer(2, 100, NULL);
+//	SetTimer(2, 100, NULL);
+	SetTimer(3, 5 * 1000, NULL);
 
 	// 캐릭터 상태 체크
 	 SetTimer(4, 10, NULL);
@@ -87,7 +86,27 @@ HCURSOR CSimsinSuryunDlg::OnQueryDragIcon()
 
 HBRUSH CSimsinSuryunDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor) 
 {
-	HBRUSH hbr = CDialogEx::OnCtlColor(pDC, pWnd, nCtlColor);
+	HBRUSH hbr = CDialog::OnCtlColor(pDC, pWnd, nCtlColor);
+
+	switch(nCtlColor) 
+	{
+		case CTLCOLOR_EDIT:
+		case CTLCOLOR_STATIC:
+			switch(pWnd->GetDlgCtrlID()) 
+			{
+				case IDC_STATIC_OUTPUT:
+					// 이건 또 왜 안돼
+					pDC->SetTextColor(RGB(255, 255, 255));
+					pDC->SetBkMode(TRANSPARENT);
+					return(HBRUSH)(NULL_BRUSH);
+					break;
+				default:
+					break;
+			}
+			break;
+		default:
+			break;
+	}
 
 	return hbr;
 }
@@ -116,15 +135,23 @@ void CSimsinSuryunDlg::OnTimer(UINT_PTR nIDEvent)
 		CreateExpThread();
 	}
 	// 경험치 static edit에 출력 (핸들 문제로 안됨..ㅠ
+	// 쓰레드 안되니까 그냥 타이머로 때움.
 	else if (nIDEvent == 3)
 	{
 		StaticExpText();
+		SetTimer(5, 2 * 1000, NULL);
+		SetTimer(3, 5 * 1000, NULL);
 	}
 	// 캐릭터 상태 체크
 	else if (nIDEvent == 4)
 	{
 		CheckStatus();
 		SetTimer(4, 10, NULL);
+	}
+	// 경험치 텍스트 제거
+	else if (nIDEvent == 5)
+	{
+		ClearStaticExpText();
 	}
 }
 
@@ -169,6 +196,10 @@ void CSimsinSuryunDlg::CheckStatus()
 		case CHARACTER_STATUS_GROUND:	
 			break;
 		case CHARACTER_STATUS_AIR:
+			// 엎드리기 취소
+			if (m_bDown)
+				m_bDown = FALSE;
+
 			// 바닥 착지시 (조건문 변경해야함
 			if (m_iMoveY >= 0 && m_iPosY == GetGround() - m_iSizeY)
 			{
@@ -196,10 +227,15 @@ void CSimsinSuryunDlg::CheckStatus()
 	m_iPosX = min(max(m_iSizeX, m_iPosX), 990 - m_iSizeX);
 	
 
+	int iGroundY = GetGround();
+
+	// 하강중인데 낙하속도가 땅과의 거리보다 크면
+	if (m_iMoveY > 0 && iGroundY - m_iSizeY < m_iPosY + m_iMoveY)
+	{
+		m_iMoveY = iGroundY - m_iSizeY - m_iPosY;
+	}
 	// y축 이동
 	m_iPosY += m_iMoveY;
-
-	int iGroundY = GetGround();
 
 	// m_iSizeY <= m_iPosY <= iGroundY - m_iSizeY
 	if (m_sStatus != CHARACTER_STATUS_LADDER)
@@ -284,17 +320,21 @@ UINT CSimsinSuryunDlg::ExpProcThread(LPVOID param)
 
 long CSimsinSuryunDlg::StaticExpText()
 {
-	m_dMaxExp += m_dAddExp;
+	//m_dMaxExp += m_dAddExp;
+	// PJY-2024-0830-ADD : 레벨업을 위한 함수로 변경
+	//IncreaseExp();
 
 	CString csMsg;
 
 	csMsg.Format(_T("경험치를 획득했습니다 (+%.0f)"), m_dAddExp);
 	SetDlgItemText(IDC_STATIC_OUTPUT, csMsg);
-	// 2초뒤 삭제?
-	Sleep(2 * 1000);
-	SetDlgItemText(IDC_STATIC_OUTPUT, NULL);
 
 	return TRUE;
+}
+
+void CSimsinSuryunDlg::ClearStaticExpText()
+{
+	SetDlgItemText(IDC_STATIC_OUTPUT, _T(""));
 }
 
 BOOL CSimsinSuryunDlg::IsLadder()
@@ -336,9 +376,9 @@ int CSimsinSuryunDlg::GetGround()
 
 	if (m_iPosX >= 106 && m_iPosX <= 910)
 	{
-		if (m_iPosY <= 447 + m_iSizeY)
+		if (m_iPosY <= 447 - m_iSizeY)
 			iGroundY = 447;
-		else if (m_iPosY <= 565 + m_iSizeY)
+		else if (m_iPosY <= 565 - m_iSizeY)
 			iGroundY = 565;
 	}
 	else if (m_iPosY < 693 - m_iSizeY)
@@ -383,7 +423,7 @@ void CSimsinSuryunDlg::OnPaint()
 	dc.Rectangle(696, 565, 743, 649);	// 2층 사다리
 
 	// 캐릭터 그리기
-	dc.SelectStockObject(BLACK_BRUSH);
+	dc.SelectStockObject(WHITE_BRUSH);
 	// 서있는 상태
 	if (!m_bDown)
 		dc.Rectangle(m_iPosX - m_iSizeX, m_iPosY - m_iSizeY, 
@@ -470,9 +510,20 @@ BOOL CSimsinSuryunDlg::PreTranslateMessage(MSG* pMsg)
 				// 점프
 				if (m_sStatus == CHARACTER_STATUS_GROUND)
 				{
-					m_iMoveY = -12;
-					m_iPosY -= 1;
-					m_sStatus = CHARACTER_STATUS_AIR;
+					// 서있을 경우 점프
+					if (!m_bDown)
+					{
+						m_iMoveY = -12;
+						m_iPosY -= 1;
+						m_sStatus = CHARACTER_STATUS_AIR;
+					}
+					// 엎드려있을경우 하강점프 단 맨 아래에선 점프하면 안됨.
+					else if (m_iPosY < 600)
+					{					
+						m_iPosY += 5;
+						m_sStatus = CHARACTER_STATUS_AIR;
+					}
+					
 				}
 				// 사다리 점프
 				else if (m_sStatus == CHARACTER_STATUS_LADDER)
@@ -507,6 +558,7 @@ BOOL CSimsinSuryunDlg::PreTranslateMessage(MSG* pMsg)
 				break;
 
 			default:
+				return TRUE;
 				break;
 		}
 		// 40 <= m_iPosY <= 693 - 40
@@ -538,4 +590,24 @@ BOOL CSimsinSuryunDlg::PreTranslateMessage(MSG* pMsg)
 		break;
 	}
 	return CDialogEx::PreTranslateMessage(pMsg);
+}
+
+
+void CSimsinSuryunDlg::TimerSleep(unsigned int pinMiliSecond)
+{
+	long lnStart = GetTickCount();
+	while(TRUE)
+	{
+		if((GetTickCount() - lnStart) > pinMiliSecond)
+		{
+			return;
+		}
+
+		MSG msg;
+		while(PeekMessage(&msg,NULL,0,0,PM_REMOVE))
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+	}
 }

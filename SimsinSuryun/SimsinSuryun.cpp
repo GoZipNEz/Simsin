@@ -38,6 +38,14 @@ BOOL CSimsinSuryunApp::InitInstance()
 {
 	CWinApp::InitInstance();
 
+	ULONG_PTR gdiplusToken;
+
+	GdiplusStartupInput gdiplusStartupInput;
+	if (::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL) != Ok) {
+		AfxMessageBox(_T("GDI+ 라이브러리의 초기화에 실패하였습니다!"));
+		return FALSE;
+	}
+
 
 	// 대화 상자에 셸 트리 뷰 또는
 	// 셸 목록 뷰 컨트롤이 포함되어 있는 경우 셸 관리자를 만듭니다.
