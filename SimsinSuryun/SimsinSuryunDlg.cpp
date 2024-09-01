@@ -25,6 +25,7 @@ CSimsinSuryunDlg::CSimsinSuryunDlg(CWnd* pParent /*=NULL*/)
 	m_bDestroy = FALSE;
 
 	//임의값
+	m_iLevel = 280;
 	m_dMaxExp = 1589756321;
 	m_dNowExp = 1561582698; // 레벨업하면 2608 남음.
 	m_dAddExp = 5635245;
@@ -33,6 +34,7 @@ CSimsinSuryunDlg::CSimsinSuryunDlg(CWnd* pParent /*=NULL*/)
 void CSimsinSuryunDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
+	DDX_Control(pDX, IDC_PROGRESS_EXP, m_prExp);
 }
 
 BEGIN_MESSAGE_MAP(CSimsinSuryunDlg, CDialogEx)
@@ -63,6 +65,16 @@ BOOL CSimsinSuryunDlg::OnInitDialog()
 
 	// 값 초기화
 	InitVars();
+
+	CString csLv;
+	csLv.Format(_T("%d"), m_iLevel);
+	SetDlgItemText(IDC_STATIC_LV, csLv);
+	CString csExp;
+	csExp.Format(_T("%.0f / %0.f"), m_dNowExp, m_dMaxExp);
+
+	m_prExp.SetRange(0, 10000);
+	int result = m_prExp.SetPos((int)m_dNowExp/m_dMaxExp * 10000);
+
 	
 	// 120분 뒤에 쫓겨남
 	SetTimer(1, m_lTicketTime * 60 * 1000, NULL);
@@ -322,7 +334,7 @@ long CSimsinSuryunDlg::StaticExpText()
 {
 	//m_dMaxExp += m_dAddExp;
 	// PJY-2024-0830-ADD : 레벨업을 위한 함수로 변경
-	//IncreaseExp();
+	IncreaseExp();
 
 	CString csMsg;
 
@@ -335,6 +347,29 @@ long CSimsinSuryunDlg::StaticExpText()
 void CSimsinSuryunDlg::ClearStaticExpText()
 {
 	SetDlgItemText(IDC_STATIC_OUTPUT, _T(""));
+}
+
+void CSimsinSuryunDlg::IncreaseExp()
+{
+	// 레벨업
+	if (m_dMaxExp <= m_dAddExp + m_dNowExp)
+	{
+		m_dNowExp = m_dAddExp + m_dNowExp - m_dMaxExp;
+		m_iLevel ++ ;
+		m_dAddExp += 123456;
+		m_dMaxExp += 123456789;
+		CString csLv;
+		csLv.Format(_T("%d"), m_iLevel);
+		SetDlgItemText(IDC_STATIC_LV, csLv);
+
+		//m_prExp.SetRange(0, (int)m_dMaxExp);
+		m_prExp.SetPos((int)m_dNowExp/m_dMaxExp * 10000);
+	}
+	else
+	{
+		m_dNowExp += m_dAddExp;
+		m_prExp.SetPos((int)m_dNowExp/m_dMaxExp * 10000);
+	}
 }
 
 BOOL CSimsinSuryunDlg::IsLadder()
@@ -411,6 +446,7 @@ void CSimsinSuryunDlg::OnPaint()
 	CPaintDC dc(this); // 그리기를 위한 디바이스 컨텍스트입니다.
 
 	//dc.SelectStockObject(NULL_BRUSH);
+	/*
 	// 바닥 그려보기
 	dc.SelectStockObject(NULL_BRUSH);
 	dc.Rectangle(106,447, 910, 491);	// 3층
@@ -421,7 +457,7 @@ void CSimsinSuryunDlg::OnPaint()
 	dc.SelectStockObject(NULL_BRUSH);
 	dc.Rectangle(337, 447, 385, 534);	// 3층 사다리
 	dc.Rectangle(696, 565, 743, 649);	// 2층 사다리
-
+	*/
 	// 캐릭터 그리기
 	dc.SelectStockObject(WHITE_BRUSH);
 	// 서있는 상태

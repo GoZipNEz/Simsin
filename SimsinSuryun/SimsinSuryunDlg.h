@@ -61,8 +61,9 @@ protected:
 	// 레벨, 경험치
 	int		m_iLevel;
 	double	m_dMaxExp, m_dNowExp, m_dAddExp;
+	CProgressCtrl	m_prExp;
 
-	//void	IncreaseExp();
+	void	IncreaseExp();
 
 	// 캐릭터
 	int		m_iSizeX, m_iSizeY; // 캐릭터 크기 
